@@ -1,22 +1,23 @@
 package com.kazakov.ivan;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 
 public interface DatesToCronConverter {
 
+    String AUTHOR = "\nauthor: kazakov ivan";
+    String NAME = "\nclass: DatesToCronConverter";
+    String PACKAGE = "\npackage: com.kazakov.ivan";
+    String GITHUB = "\ngithub: https://github.com/IvanSpacebiker/DigDesign-DatesToCronConverter";
 
-
-    static String AUTHOR = "kazakov ivan";
-    static String NAME = "DatesToCronConverter";
-    static String PACKAGE = "com.kazakov.ivan";
 
     /**
      * Default date format for input dates
      */
     String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
-
-
 
 
     /**
@@ -25,37 +26,25 @@ public interface DatesToCronConverter {
      * @param dates list of dates
      * @return cron expression ("0 * * * * MON")
      */
+    default List<DateToCalendar> convert(List<String> dates){
 
+        List<DateToCalendar> formatedDates = new ArrayList<>();
 
-    default String convert(List<String> dates) throws DatesToCronConvertException{
-        return null;
-    };
+        for (String dateAndTime : dates){
+            DateToCalendar formatedDate = new DateToCalendar(dateAndTime); //creating an Object with date parts
+            formatedDates.add(formatedDate);
+        }
 
+        Collections.sort(formatedDates, new DateComparator());
 
-
+        return formatedDates; //returning a List of unsorted Objects
+    }
 
 
     static String getImplementationInfo(){
 
-        String impInfo = AUTHOR + ", " + NAME + ", " + PACKAGE;
+        return AUTHOR + NAME + PACKAGE + GITHUB;
 
-        return impInfo;
-
-    };
+    }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
