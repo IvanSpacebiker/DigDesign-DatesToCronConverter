@@ -1,23 +1,22 @@
 package com.kazakov.ivan;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 
 public interface DatesToCronConverter {
 
-    String AUTHOR = "\nauthor: kazakov ivan";
+    String AUTHOR = "\nauthor: kazakov ivan igorevich";
     String NAME = "\nclass: DatesToCronConverter";
     String PACKAGE = "\npackage: com.kazakov.ivan";
     String GITHUB = "\ngithub: https://github.com/IvanSpacebiker/DigDesign-DatesToCronConverter";
-
-
     /**
      * Default date format for input dates
      */
     String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
+    SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT, Locale.ENGLISH);
+
 
 
     /**
@@ -26,18 +25,30 @@ public interface DatesToCronConverter {
      * @param dates list of dates
      * @return cron expression ("0 * * * * MON")
      */
-    default List<DateToCalendar> convert(List<String> dates){
+    default List<Calendar> convert(List<String> dates) throws ParseException {
 
-        List<DateToCalendar> formatedDates = new ArrayList<>();
+        List<Calendar> formatedDates = new ArrayList<>();
 
         for (String dateAndTime : dates){
-            DateToCalendar formatedDate = new DateToCalendar(dateAndTime); //creating an Object with date parts
+
+            Calendar formatedDate = toCalendar(dateFormat.parse(dateAndTime));  //creating an Object with date parts
             formatedDates.add(formatedDate);
+
         }
 
-        Collections.sort(formatedDates, new DateComparator());
+        Collections.sort(formatedDates, new CalendarComparator());
 
-        return formatedDates; //returning a List of unsorted Objects
+        int correctDateCounter = 1;
+
+        for (int i = 0; i < formatedDates.size() - 2; i++){
+            DateDiff dateDiff1 = new DateDiff(formatedDates.get(i), formatedDates.get(i+1));
+            DateDiff dateDiff2 = new DateDiff(formatedDates.get(i+1), formatedDates.get(i+2));
+            if (dateDiff1.equals(dateDiff2)){correctDateCounter += 1;}
+        }
+
+
+
+        return formatedDates; //returning a List of sorted Calendars
     }
 
 
@@ -45,6 +56,12 @@ public interface DatesToCronConverter {
 
         return AUTHOR + NAME + PACKAGE + GITHUB;
 
+    }
+
+    static Calendar toCalendar(Date date){
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        return cal;
     }
 
 }
