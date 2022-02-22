@@ -25,30 +25,28 @@ public interface DatesToCronConverter {
      * @param dates list of dates
      * @return cron expression ("0 * * * * MON")
      */
-    default List<Calendar> convert(List<String> dates) throws ParseException {
+    default List<DateDiff> convert(List<String> dates) throws ParseException {
 
-        List<Calendar> formatedDates = new ArrayList<>();
+        List<Calendar> formatDates = new ArrayList<>();
 
         for (String dateAndTime : dates){
 
-            Calendar formatedDate = toCalendar(dateFormat.parse(dateAndTime));  //creating an Object with date parts
-            formatedDates.add(formatedDate);
+            Calendar formatDate = toCalendar(dateFormat.parse(dateAndTime));  //creating an Object with date parts
+            formatDates.add(formatDate);
 
         }
 
-        Collections.sort(formatedDates, new CalendarComparator());
+        Collections.sort(formatDates, new CalendarComparator());  //sorting
 
-        int correctDateCounter = 1;
+        //dateDiffs frequency block
 
-        for (int i = 0; i < formatedDates.size() - 2; i++){
-            DateDiff dateDiff1 = new DateDiff(formatedDates.get(i), formatedDates.get(i+1));
-            DateDiff dateDiff2 = new DateDiff(formatedDates.get(i+1), formatedDates.get(i+2));
-            if (dateDiff1.equals(dateDiff2)){correctDateCounter += 1;}
-        }
+        List<DateDiff> dateDiffs = diffListCreate(formatDates);
+        int maxFreqNum = maxFreqDef(dateDiffs);
 
+        //dateDiffs frequency block
 
 
-        return formatedDates; //returning a List of sorted Calendars
+        return dateDiffs; //should return a Cron
     }
 
 
@@ -63,5 +61,46 @@ public interface DatesToCronConverter {
         cal.setTime(date);
         return cal;
     }
+
+    default List<DateDiff> diffListCreate(List<Calendar> dates){
+
+        List<DateDiff> dateDiffs = new ArrayList<>();
+
+        for (int i = 0; i < dates.size() - 1; i++){
+            DateDiff dateDiff = new DateDiff(dates.get(i), dates.get(i+1));
+            dateDiffs.add(dateDiff);
+        }
+
+        for (int i = 0; i < dateDiffs.size(); i++){
+
+            DateDiff currentDiff = dateDiffs.get(i);
+
+            for (int j = i + 1; j < dateDiffs.size(); j++) {
+
+                DateDiff compareDiff = dateDiffs.get(j);
+
+                if (currentDiff.equals(compareDiff)){
+                    currentDiff.freqIncrease();
+                }
+
+            }
+
+        }
+
+        return dateDiffs;
+    }
+
+    default int maxFreqDef(List<DateDiff> dates){
+
+        int maxFreq = -1;
+
+        for (int i = 0; i < dates.size() - 1; i++){
+            int f = dates.get(i).freq;
+            maxFreq = f >= maxFreq && f >= dates.size() / 2 ? i : maxFreq;
+        }
+        return maxFreq;
+    }
+
+
 
 }

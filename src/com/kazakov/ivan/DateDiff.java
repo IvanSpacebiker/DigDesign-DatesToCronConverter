@@ -10,7 +10,7 @@ public class DateDiff {
     int day;
     int month;
     int year;
-
+    int freq = 1;
 
 
     DateDiff(Calendar c1, Calendar c2) {
@@ -22,6 +22,17 @@ public class DateDiff {
         this.year = c2.get(Calendar.YEAR) - c1.get(Calendar.YEAR);
     }
 
+    void freqIncrease(){
+        this.freq += 1;
+    }
+
+    public int getFreq() {
+        return freq;
+    }
+
+    public void getDiff(){
+        System.out.format("\n%d:%d:%d %d-%d-%d", secs, mins, hrs, day, month, year);
+    }
 
     @Override
     public boolean equals(Object obj) {
@@ -35,4 +46,5 @@ public class DateDiff {
                 month == myObject.month &&
                 year == myObject.year;
     }
+
 }
