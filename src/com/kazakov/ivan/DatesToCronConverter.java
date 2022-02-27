@@ -30,11 +30,13 @@ public interface DatesToCronConverter {
      * @param dates list of dates
      * @return cron expression ("0 * * * * MON")
      */
-    default List<Calendar> convert(List<String> dates) throws ParseException {
+    default String convert(List<String> dates) throws ParseException {
 
         List<Calendar> calList = calListCreate(dates);
+        Cron cron = new Cron(calList);
 
-        return calList; //should return a Cron
+
+        return cron.getCron(); //should return a Cron
     }
 
 
