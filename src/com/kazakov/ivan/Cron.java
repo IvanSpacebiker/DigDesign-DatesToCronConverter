@@ -1,6 +1,10 @@
 package com.kazakov.ivan;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Calendar;
+import java.util.Arrays;
+import java.util.Collections;
 
 public class Cron {
 
@@ -10,24 +14,46 @@ public class Cron {
     private List<Integer> hrs = new ArrayList<>();
     private List<Integer> days = new ArrayList<>();
     private List<Integer> months = new ArrayList<>();
-
+    private String cron;
 
     public Cron(List<Calendar> dates) {
 
         for (Calendar date : dates) {
             this.secs.add(date.get(Calendar.SECOND));
             this.mins.add(date.get(Calendar.MINUTE));
-            this.hrs.add(date.get(Calendar.HOUR));
+            this.hrs.add(date.get(Calendar.HOUR_OF_DAY));
             this.days.add(date.get(Calendar.DAY_OF_MONTH));
-            this.months.add(date.get(Calendar.MONTH));
+            this.months.add(date.get(Calendar.MONTH) + 1);
         }
 
-        List<Integer> startAndEnd= getLongestList(months);
-        this.start = startAndEnd.get(0);
-        this.end = startAndEnd.get(1);
+
+        List<Integer> secsSpecs = getLongestList(secs);
+        List<Integer> minsSpecs = getLongestList(mins);
+        List<Integer> hoursSpecs = getLongestList(hrs);
+        List<Integer> daysSpecs = getLongestList(days);
+        List<Integer> monthsSpecs = getLongestList(months);
+        List<Integer> start = Arrays.asList(secsSpecs.get(0), minsSpecs.get(0), hoursSpecs.get(0), daysSpecs.get(0), monthsSpecs.get(0));
+        List<Integer> end = Arrays.asList(secsSpecs.get(1), minsSpecs.get(1), hoursSpecs.get(1), daysSpecs.get(1), monthsSpecs.get(1));
+
+
+        //throw exception if (start > end || end - start + 1 < dates.size() / 2)
+        this.start = Collections.max(start);
+        this.end = Collections.min(end);
+
+        StringBuilder cron = new StringBuilder();
+        cron
+                .append(createCronParam(secs, secsSpecs)).append(" ")
+                .append(createCronParam(mins, minsSpecs)).append(" ")
+                .append(createCronParam(hrs, hoursSpecs)).append(" ")
+                .append(createCronParam(days, daysSpecs)).append(" ")
+                .append(createCronParam(months, monthsSpecs));
+
+        this.cron = cron.toString();
+
+
     }
 
-    public List<Integer> getLongestList (List < Integer > param) {
+    public List<Integer> getLongestList (List<Integer> param) {
         int start = 0, end = 0, len = 1, maxLen = len, maxStart = start, maxEnd = end, cycleStart = start;
         boolean cycle = false;
 
@@ -53,6 +79,7 @@ public class Cron {
 
                 if (i == param.size() - 1 && cycle){
                     maxEnd = i;
+
                 }
 
             }
@@ -95,17 +122,29 @@ public class Cron {
             }
         }
 
-        return Arrays.asList(maxStart, maxEnd);
+        return Arrays.asList(maxStart, maxEnd, cycleStart);
     }
 
-    public int getStart () {
-        return start;
+    public String createCronParam(List<Integer> param, List<Integer> paramSpecs){
+        int last = paramSpecs.get(2) != 0 ? paramSpecs.get(2) - 1 : end;
+        String lastAppended = "";
+
+        StringBuilder cronParam = new StringBuilder();
+        cronParam.append(param.get(start));
+
+
+        for (int i = start + 1; i <= last; i++){
+            String appended = "/" + param.get(i);
+            if (!cronParam.toString().equals(param.get(i).toString()) && !appended.equals(lastAppended)){
+                cronParam.append(appended);
+            }
+            lastAppended = appended;
+        }
+
+        return cronParam.toString();
     }
 
-    public int getEnd () {
-        return end;
+    public String getCron() {
+        return cron;
     }
-
-
-
 }
